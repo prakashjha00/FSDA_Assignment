@@ -1,0 +1,70 @@
+--1. Load the given dataset into snowflake with a primary key to Order Date column.
+create or replace table sales_data_final 
+( order_id varchar(50),
+order_date date primary key,
+ship_date date,
+ship_mode varchar(50),
+customer_name varchar (50),
+segment varchar(50),
+state varchar(50),
+country varchar(50),
+market varchar(50),
+region varchar(50),
+product_id varchar(50),
+category varchar(50),
+sub_category varchar(50),
+product_name varchar(255),
+sales number,
+quantity number,
+discount number(10,6),
+profit number(10,6),
+shipping_cost number(20,6),
+order_priority varchar(50),
+year varchar(5));
+
+
+-- 2 .Change the Primary key to Order Id Column..
+alter table sales_data_final
+drop primary key;
+
+alter table sales_data_final
+Add primary key (order_id);
+
+-- 2. CHECK THE ORDER DATE AND SHIP DATE TYPE AND THINK IN WHICH DATA TYPE YOU HAVE TO CHANGE. 
+– Date datatype (Already Clean the data in the excel)
+
+-- 3. EXTACT THE LAST NUMBER AFTER THE - AND CREATE OTHER COLUMN AND UPDATE IT.
+
+alter table sales_data_final
+Add column order_extract number;
+
+update sales_data_final set order_extract = substring(ORDER_ID,'9',10);
+
+-- 5. Create a new column called Discount Flag and categorize it based on discount.
+-- Use ‘Yes’ if the discount is greater than zero else ‘No’.
+
+alter table sales_data_final
+Add column discount_flag varchar(5);
+
+update   sales_data_final set discount_flag = (case when  discount>0 then 'Yes'
+else 'NO'
+end);
+
+-- 6. Create a new column called process days and calculate how many days it takes for each order id to process from the order to its shipment.
+
+alter table sales_data_final
+Add column process_day number;
+
+update sales_data_final set process_day = DATEDIFF(day,ORDER_DATE,ship_date);
+
+-- 7. . FLAG THE PROCESS DAY AS BY RATING IF IT TAKES LESS OR EQUAL 3  DAYS MAKE 5,LESS OR EQUAL THAN 6 DAYS BUT MORE THAN 3 MAKE 4,LESS THAN 10 BUT MORE THAN 6 MAKE 3,MORE THAN 10 MAKE IT 2 FOR EVERY ORDER ID.
+alter table sales_data_final
+Add column Rating number(2,0);
+
+update sales_data_final set Rating = (
+case 
+when process_day <=3 then 5
+when process_day >3 and process_day <=6 then 4
+when process_day >6 and process_day<=10 then 3
+Else 2
+end);
